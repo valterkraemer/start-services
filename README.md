@@ -1,6 +1,6 @@
-# Setup MongoDB replica set
+# Start services
 
-*Setup inspiration taken from this [gist](https://gist.github.com/davisford/bb37079900888c44d2bbcb2c52a5d6e8).*
+MongoDB replica set setup instructions taken from this [gist](https://gist.github.com/davisford/bb37079900888c44d2bbcb2c52a5d6e8).
 
 ## Installation instructions
 
@@ -14,15 +14,19 @@ brew install rabbitmq
 brew install redis
 ```
 
-2. Init Postgresql
+2. Init PostgreSQL
 
 ```
 initdb db/postgresql
 ```
 
-2. `node .`
+3. Run index.js
 
-3. Initiate MongoDB replica set
+```
+node .
+```
+
+3. Initiate MongoDB replica set.
 
 ```
 mongo
