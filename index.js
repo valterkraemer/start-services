@@ -7,17 +7,26 @@ const MONGO_CONF_PATH = path.resolve(__dirname, "mongod.conf");
 
 const POSTGRESQL_DB_PATH = path.resolve(__dirname, "db/postgresql");
 const REDIS_DB_PATH = path.resolve(__dirname, "db/redis");
+const RABBITMQ_PATH = path.resolve(__dirname, "db/rabbitmq");
 
 mkDirByPathSync(MONGO_DB_PATH);
 mkDirByPathSync(POSTGRESQL_DB_PATH);
 mkDirByPathSync(REDIS_DB_PATH);
+mkDirByPathSync(RABBITMQ_PATH);
 
 startProcess("mongod", [
   `--dbpath=${MONGO_DB_PATH}`,
   `--config=${MONGO_CONF_PATH}`
 ]);
 startProcess("redis-server", ["--dir", REDIS_DB_PATH]);
-startProcess("/usr/local/sbin/rabbitmq-server");
+startProcess("/usr/local/sbin/rabbitmq-server", [], {
+  env: {
+    RABBITMQ_SCHEMA_DIR: RABBITMQ_PATH,
+    RABBITMQ_MNESIA_BASE: RABBITMQ_PATH,
+    RABBITMQ_MNESIA_DIR: RABBITMQ_PATH + '/rabbit@localhost',
+    HOME: RABBITMQ_PATH
+  }
+});
 startProcess("elasticsearch");
 startProcess("postgres", ["-D", POSTGRESQL_DB_PATH]);
 
