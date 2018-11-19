@@ -17,6 +17,7 @@ brew install redis
 2. Init PostgreSQL
 
 ```
+cd start-services
 initdb db/postgresql
 ```
 
