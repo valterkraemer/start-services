@@ -26,10 +26,3 @@ initdb db/postgresql
 ```
 node .
 ```
-
-3. Initiate MongoDB replica set.
-
-```
-mongo
-rs.initiate({_id: "myreplica", members: [{_id: 0, host: "localhost:27017"}] })
-```

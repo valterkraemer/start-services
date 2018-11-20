@@ -2,35 +2,57 @@ const spawn = require("child_process").spawn;
 const fs = require("fs");
 const path = require("path");
 
-const MONGO_DB_PATH = path.resolve(__dirname, "db/mongodb");
-const MONGO_CONF_PATH = path.resolve(__dirname, "mongod.conf");
+const PATH = {
+  MONGO_DB: path.resolve("./db/mongodb"),
+  MONGO_CONF: path.resolve("./mongod.conf"),
+  REDIS_DB: path.resolve("./db/redis"),
+  RABBITMQ: path.resolve("./db/rabbitmq"),
+  POSTGRESQL_DB: path.resolve("./db/postgresql")
+};
 
-const POSTGRESQL_DB_PATH = path.resolve(__dirname, "db/postgresql");
-const REDIS_DB_PATH = path.resolve(__dirname, "db/redis");
-const RABBITMQ_PATH = path.resolve(__dirname, "db/rabbitmq");
+const PROCESSES = [
+  // Start MongoDB server
+  ["mongod", [`--dbpath=${PATH.MONGO_DB}`, `--config=${PATH.MONGO_CONF}`]],
+  // Setup MongoDB replica set
+  [
+    "mongo",
+    [
+      "--eval",
+      'rs.initiate({_id: "myreplica", members: [{_id: 0, host: "localhost:27017"}] })'
+    ]
+  ],
+  // Start Redis server
+  ["redis-server", ["--dir", PATH.REDIS_DB]],
+  // Start RabbitMQ server
+  [
+    "/usr/local/sbin/rabbitmq-server",
+    [],
+    {
+      env: {
+        RABBITMQ_SCHEMA_DIR: PATH.RABBITMQ,
+        RABBITMQ_MNESIA_BASE: PATH.RABBITMQ,
+        RABBITMQ_MNESIA_DIR: `${PATH.RABBITMQ}/rabbit@localhost`,
+        HOME: PATH.RABBITMQ
+      }
+    }
+  ],
+  // Start Elasticsearch
+  ["elasticsearch"],
+  // Start Postgres
+  ["postgres", ["-D", PATH.POSTGRESQL_DB]]
+];
 
-mkDirByPathSync(MONGO_DB_PATH);
-mkDirByPathSync(POSTGRESQL_DB_PATH);
-mkDirByPathSync(REDIS_DB_PATH);
-mkDirByPathSync(RABBITMQ_PATH);
+for (const key in PATH) {
+  mkDirByPathSync(PATH[key]);
+}
 
-startProcess("mongod", [
-  `--dbpath=${MONGO_DB_PATH}`,
-  `--config=${MONGO_CONF_PATH}`
-]);
-startProcess("redis-server", ["--dir", REDIS_DB_PATH]);
-startProcess("/usr/local/sbin/rabbitmq-server", [], {
-  env: {
-    RABBITMQ_SCHEMA_DIR: RABBITMQ_PATH,
-    RABBITMQ_MNESIA_BASE: RABBITMQ_PATH,
-    RABBITMQ_MNESIA_DIR: RABBITMQ_PATH + '/rabbit@localhost',
-    HOME: RABBITMQ_PATH
-  }
-});
-startProcess("elasticsearch");
-startProcess("postgres", ["-D", POSTGRESQL_DB_PATH]);
+PROCESSES.forEach(startProcess);
 
-function startProcess(...commands) {
+//
+// HELPERS
+//
+
+function startProcess(commands) {
   const pipe = spawn(...commands);
 
   pipe.stdout.on("data", data => {
