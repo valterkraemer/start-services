@@ -26,3 +26,11 @@ initdb db/postgresql
 ```
 node .
 ```
+
+## Killall
+
+If the script have crashed for some reason and need to kill all processes
+
+```
+killall mongod erl_child_setup redis-server postgres java
+```
