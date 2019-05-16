@@ -1,6 +1,7 @@
 const spawn = require("child_process").spawn;
 const fs = require("fs");
 const path = require("path");
+const CONFIG = require('./config');
 
 const PATH = {
   MONGO_DB: path.resolve("./db/mongodb"),
@@ -37,7 +38,13 @@ const PROCESSES = [
     }
   ],
   // Start Elasticsearch
-  ["elasticsearch"],
+  [
+    "/usr/local/bin/elasticsearch",
+    [],
+    {
+      env: CONFIG.ELASTICSEARCH_ENV
+    }
+  ],
   // Start Postgres
   ["postgres", ["-D", PATH.POSTGRESQL_DB]]
 ];
